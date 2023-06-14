@@ -1,0 +1,14 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
+    <Style src="project://database/Assets/InternalAssets/UI%20Toolkit/Stylesheet.uss?fileID=7433441132597879392&amp;guid=e2381ae6d162682468198b00126b067b&amp;type=3#Stylesheet" />
+    <ui:VisualElement name="Container" style="flex-grow: 1; background-color: rgba(0, 0, 0, 0); align-items: center; justify-content: center; align-self: auto;">
+        <ui:VisualElement name="GreetingsWindow" style="top: 395px; height: 546px;">
+            <ui:Label tabindex="-1" text="2048" display-tooltip-when-elided="true" name="GreetingsLabel" style="align-items: center; font-size: 100px; -unity-font-style: bold; color: rgb(120, 24, 3); width: auto; height: auto; -unity-text-align: middle-center; -unity-text-outline-width: 0; white-space: nowrap; padding-left: 1px;" />
+            <ui:Button text="Start" display-tooltip-when-elided="true" name="StartButton" class="button" style="height: 100px; width: 500px; margin-top: 25%; font-size: 50%; top: -126px;" />
+        </ui:VisualElement>
+        <ui:VisualElement name="MainGameUI" style="flex-grow: 1; background-color: rgba(0, 0, 0, 0); align-items: center; justify-content: center; align-self: flex-start; bottom: 1400px; position: absolute; left: 0; top: 0; right: -4px;" />
+        <ui:VisualElement name="GameOverWindow" style="flex-grow: 1; background-color: rgba(0, 0, 0, 0); position: absolute; left: 4px; top: 0; right: -3px; bottom: 869px; justify-content: center; align-items: center;">
+            <ui:Label tabindex="-1" text="Game Over" display-tooltip-when-elided="true" name="GameOverLabel" style="align-items: center; font-size: 100px; -unity-font-style: bold; color: rgb(120, 24, 3); width: auto; height: auto; -unity-text-align: middle-center; -unity-text-outline-width: 0; white-space: nowrap; padding-left: 1px;" />
+            <ui:Button text="Restart" display-tooltip-when-elided="true" name="RestartButton" class="button" style="height: 100px; width: 500px; margin-top: 25%; font-size: 50%;" />
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

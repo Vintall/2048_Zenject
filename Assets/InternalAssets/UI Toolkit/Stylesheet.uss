@@ -1,0 +1,16 @@
+.button {
+    background-color: rgb(255, 174, 107);
+    -unity-slice-scale: 1px;
+    border-left-color: rgb(214, 145, 35);
+    border-right-color: rgb(215, 145, 36);
+    border-top-color: rgb(255, 204, 124);
+    border-bottom-color: rgb(255, 204, 124);
+    border-left-width: 3px;
+    border-right-width: 3px;
+    border-top-width: 3px;
+    border-bottom-width: 3px;
+    border-top-left-radius: 10px;
+    border-bottom-left-radius: 10px;
+    border-top-right-radius: 10px;
+    border-bottom-right-radius: 10px;
+}
