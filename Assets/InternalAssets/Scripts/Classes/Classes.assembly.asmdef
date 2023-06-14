@@ -1,0 +1,20 @@
+{
+    "name": "Classes.assembly",
+    "rootNamespace": "",
+    "references": [
+        "GUID:fd6a2f16dea427745882aea5ac313c35",
+        "GUID:c3d06342f64da4a4bafa52f96644c68a",
+        "GUID:ac5787afc0aa9884086187aeabb1cf1a",
+        "GUID:0d8beb7f090555447a6cf5ce9e54dbb4",
+        "GUID:d0acddb179989574c8355991596bd3e6"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

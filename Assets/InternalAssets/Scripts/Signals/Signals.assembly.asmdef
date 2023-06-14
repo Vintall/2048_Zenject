@@ -1,0 +1,16 @@
+{
+    "name": "Signals.assembly",
+    "rootNamespace": "",
+    "references": [
+        "GUID:fd6a2f16dea427745882aea5ac313c35"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

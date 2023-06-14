@@ -1,15 +1,7 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.SocialPlatforms;
 
 
-public interface IField
-{
-    public void SpawnTiles();
-    public void CheckField();
-    public void InputHandle(SwipeDirection swipeDirection);
-}
 public class Field : MonoBehaviour, IField
 {
     [SerializeField]
@@ -19,12 +11,12 @@ public class Field : MonoBehaviour, IField
 
     public int FreeTilesCount
     {
-        get
+        get 
         {
             int count = 0;
 
             for (int i = 0; i < 9; ++i)
-                    if (tiles[i].GetTileState == Tile.TileState.Free)
+                    if (tiles[i].GetTileState == TileState.Free)
                         ++count;
 
             return count;
@@ -47,7 +39,6 @@ public class Field : MonoBehaviour, IField
             return;
 
         int tilesToSpawn = Random.Range(MinTilesSpawn, 1 + Mathf.Min(FreeTilesCount, MaxTilesSpawn));
-        //Debug.Log($"Tiles to spawn: {tilesToSpawn}");
 
         if (tilesToSpawn > FreeTilesCount)
             tilesToSpawn = FreeTilesCount;
@@ -55,7 +46,7 @@ public class Field : MonoBehaviour, IField
         List<int> freeTileIndexes = new List<int>();
 
         for (int i = 0; i < tiles.Length; ++i)
-            if (tiles[i].GetTileState == Tile.TileState.Free)
+            if (tiles[i].GetTileState == TileState.Free)
                 freeTileIndexes.Add(i);
 
         int[] tilesToSpawnIndexes = new int[tilesToSpawn];
@@ -66,11 +57,11 @@ public class Field : MonoBehaviour, IField
             freeTileIndexes.RemoveAt(index);
 
             tiles[tilesToSpawnIndexes[i]].TileScore = 2;
-            tiles[tilesToSpawnIndexes[i]].GetTileState = Tile.TileState.Occupied;
+            tiles[tilesToSpawnIndexes[i]].GetTileState = TileState.Occupied;
         }
 
     }
-    public void CheckField()
+    public bool CheckField()
     {
         bool isProceedPossible = false;
         for (int i = 0; i < 3; ++i)
@@ -88,23 +79,17 @@ public class Field : MonoBehaviour, IField
                         isProceedPossible = true;
                         break;
                     }
-                if(tiles[tilesGrid[i, j]].GetTileState == Tile.TileState.Free)
+                if(tiles[tilesGrid[i, j]].GetTileState == TileState.Free)
                 {
                     isProceedPossible = true;
                     break;
                 }
             }
-        if(!isProceedPossible)
-        {
-            Debug.Log("GameOverEvent");
-            return;
-        }
-
-        
+        return isProceedPossible;
     }
-    public void InputHandle(SwipeDirection swipeDirection)
+    public int InputHandle(SwipeDirection swipeDirection)
     { // Definitely require refactoring. But it's enough for some functional state
-        CheckField();
+        int scoreResult = 0;
 
         if (swipeDirection == SwipeDirection.Left)
             for (int i = 0; i < 3; ++i)
@@ -113,18 +98,18 @@ public class Field : MonoBehaviour, IField
 
                 // Aligning
                 for (int j = 0; j < 3; ++j)
-                    if (tiles[tilesGrid[i, j]].GetTileState == Tile.TileState.Occupied)
+                    if (tiles[tilesGrid[i, j]].GetTileState == TileState.Occupied)
                         fullTileIndex.Add(j);
 
                 for (int j = 0; j < fullTileIndex.Count; ++j)
                 {
                     int scoreBuff = tiles[tilesGrid[i, fullTileIndex[j]]].TileScore;
 
-                    tiles[tilesGrid[i, fullTileIndex[j]]].GetTileState = Tile.TileState.Free;
+                    tiles[tilesGrid[i, fullTileIndex[j]]].GetTileState = TileState.Free;
                     tiles[tilesGrid[i, fullTileIndex[j]]].TileScore = 0;
 
                     tiles[tilesGrid[i, j]].TileScore = scoreBuff;
-                    tiles[tilesGrid[i, j]].GetTileState = Tile.TileState.Occupied;
+                    tiles[tilesGrid[i, j]].GetTileState = TileState.Occupied;
                 }
 
                 // Merging
@@ -133,30 +118,32 @@ public class Field : MonoBehaviour, IField
                     if (tiles[tilesGrid[i, j]].TileScore != tiles[tilesGrid[i, j + 1]].TileScore)
                         continue;
 
-                    if (tiles[tilesGrid[i, j]].GetTileState == Tile.TileState.Free)
+                    if (tiles[tilesGrid[i, j]].GetTileState == TileState.Free)
                         continue;
+
+                    ++scoreResult;
 
                     tiles[tilesGrid[i, j]].TileScore *= 2;
                     tiles[tilesGrid[i, j + 1]].TileScore = 0;
-                    tiles[tilesGrid[i, j + 1]].GetTileState = Tile.TileState.Free;
+                    tiles[tilesGrid[i, j + 1]].GetTileState = TileState.Free;
                 }
 
                 // Finalising
                 fullTileIndex = new List<int>(3);
 
                 for (int j = 0; j < 3; ++j)
-                    if (tiles[tilesGrid[i, j]].GetTileState == Tile.TileState.Occupied)
+                    if (tiles[tilesGrid[i, j]].GetTileState == TileState.Occupied)
                         fullTileIndex.Add(j);
 
                 for (int j = 0; j < fullTileIndex.Count; ++j)
                 {
                     int scoreBuff = tiles[tilesGrid[i, fullTileIndex[j]]].TileScore;
 
-                    tiles[tilesGrid[i, fullTileIndex[j]]].GetTileState = Tile.TileState.Free;
+                    tiles[tilesGrid[i, fullTileIndex[j]]].GetTileState = TileState.Free;
                     tiles[tilesGrid[i, fullTileIndex[j]]].TileScore = 0;
 
                     tiles[tilesGrid[i, j]].TileScore = scoreBuff;
-                    tiles[tilesGrid[i, j]].GetTileState = Tile.TileState.Occupied;
+                    tiles[tilesGrid[i, j]].GetTileState = TileState.Occupied;
                 }
             }
 
@@ -166,18 +153,18 @@ public class Field : MonoBehaviour, IField
                 List<int> fullTileIndex = new List<int>(3);
 
                 for (int j = 0; j < 3; ++j) // Rows
-                    if (tiles[tilesGrid[j, i]].GetTileState == Tile.TileState.Occupied)
+                    if (tiles[tilesGrid[j, i]].GetTileState == TileState.Occupied)
                         fullTileIndex.Add(j);
 
                 for (int j = 0; j < fullTileIndex.Count; ++j)
                 {
                     int scoreBuff = tiles[tilesGrid[fullTileIndex[j], i]].TileScore;
 
-                    tiles[tilesGrid[fullTileIndex[j], i]].GetTileState = Tile.TileState.Free;
+                    tiles[tilesGrid[fullTileIndex[j], i]].GetTileState = TileState.Free;
                     tiles[tilesGrid[fullTileIndex[j], i]].TileScore = 0;
 
                     tiles[tilesGrid[j, i]].TileScore = scoreBuff;
-                    tiles[tilesGrid[j, i]].GetTileState = Tile.TileState.Occupied;
+                    tiles[tilesGrid[j, i]].GetTileState = TileState.Occupied;
                 }
 
                 // Merging stage
@@ -187,12 +174,14 @@ public class Field : MonoBehaviour, IField
                     if (tiles[tilesGrid[j, i]].TileScore != tiles[tilesGrid[j + 1, i]].TileScore)
                         continue;
 
-                    if (tiles[tilesGrid[j, i]].GetTileState == Tile.TileState.Free)
+                    if (tiles[tilesGrid[j, i]].GetTileState == TileState.Free)
                         continue;
+
+                    ++scoreResult;
 
                     tiles[tilesGrid[j, i]].TileScore *= 2;
                     tiles[tilesGrid[j + 1, i]].TileScore = 0;
-                    tiles[tilesGrid[j + 1, i]].GetTileState = Tile.TileState.Free;
+                    tiles[tilesGrid[j + 1, i]].GetTileState = TileState.Free;
                 }
 
 
@@ -201,18 +190,18 @@ public class Field : MonoBehaviour, IField
                 fullTileIndex = new List<int>(3);
 
                 for (int j = 0; j < 3; ++j) // Rows
-                    if (tiles[tilesGrid[j, i]].GetTileState == Tile.TileState.Occupied)
+                    if (tiles[tilesGrid[j, i]].GetTileState == TileState.Occupied)
                         fullTileIndex.Add(j);
 
                 for (int j = 0; j < fullTileIndex.Count; ++j)
                 {
                     int scoreBuff = tiles[tilesGrid[fullTileIndex[j], i]].TileScore;
 
-                    tiles[tilesGrid[fullTileIndex[j], i]].GetTileState = Tile.TileState.Free;
+                    tiles[tilesGrid[fullTileIndex[j], i]].GetTileState = TileState.Free;
                     tiles[tilesGrid[fullTileIndex[j], i]].TileScore = 0;
 
                     tiles[tilesGrid[j, i]].TileScore = scoreBuff;
-                    tiles[tilesGrid[j, i]].GetTileState = Tile.TileState.Occupied;
+                    tiles[tilesGrid[j, i]].GetTileState = TileState.Occupied;
                 }
             }
 
@@ -222,18 +211,18 @@ public class Field : MonoBehaviour, IField
                 List<int> fullTileIndex = new List<int>(3);
 
                 for (int j = 2; j >= 0; --j)
-                    if (tiles[tilesGrid[i, j]].GetTileState == Tile.TileState.Occupied)
+                    if (tiles[tilesGrid[i, j]].GetTileState == TileState.Occupied)
                         fullTileIndex.Add(j);
 
                 for (int j = 0; j < fullTileIndex.Count; ++j)
                 {
                     int scoreBuff = tiles[tilesGrid[i, fullTileIndex[j]]].TileScore;
 
-                    tiles[tilesGrid[i, fullTileIndex[j]]].GetTileState = Tile.TileState.Free;
+                    tiles[tilesGrid[i, fullTileIndex[j]]].GetTileState = TileState.Free;
                     tiles[tilesGrid[i, fullTileIndex[j]]].TileScore = 0;
 
                     tiles[tilesGrid[i, 2 - j]].TileScore = scoreBuff;
-                    tiles[tilesGrid[i, 2 - j]].GetTileState = Tile.TileState.Occupied;
+                    tiles[tilesGrid[i, 2 - j]].GetTileState = TileState.Occupied;
                 }
 
                 // Merging
@@ -243,12 +232,14 @@ public class Field : MonoBehaviour, IField
                     if (tiles[tilesGrid[i, j]].TileScore != tiles[tilesGrid[i, j - 1]].TileScore)
                         continue;
 
-                    if (tiles[tilesGrid[i, j]].GetTileState == Tile.TileState.Free)
+                    if (tiles[tilesGrid[i, j]].GetTileState == TileState.Free)
                         continue;
+
+                    ++scoreResult;
 
                     tiles[tilesGrid[i, j]].TileScore *= 2;
                     tiles[tilesGrid[i, j - 1]].TileScore = 0;
-                    tiles[tilesGrid[i, j - 1]].GetTileState = Tile.TileState.Free;
+                    tiles[tilesGrid[i, j - 1]].GetTileState = TileState.Free;
                 }
 
                 // Finalising
@@ -256,18 +247,18 @@ public class Field : MonoBehaviour, IField
                 fullTileIndex = new List<int>(3);
 
                 for (int j = 2; j >= 0; --j)
-                    if (tiles[tilesGrid[i, j]].GetTileState == Tile.TileState.Occupied)
+                    if (tiles[tilesGrid[i, j]].GetTileState == TileState.Occupied)
                         fullTileIndex.Add(j);
 
                 for (int j = 0; j < fullTileIndex.Count; ++j)
                 {
                     int scoreBuff = tiles[tilesGrid[i, fullTileIndex[j]]].TileScore;
 
-                    tiles[tilesGrid[i, fullTileIndex[j]]].GetTileState = Tile.TileState.Free;
+                    tiles[tilesGrid[i, fullTileIndex[j]]].GetTileState = TileState.Free;
                     tiles[tilesGrid[i, fullTileIndex[j]]].TileScore = 0;
 
                     tiles[tilesGrid[i, 2 - j]].TileScore = scoreBuff;
-                    tiles[tilesGrid[i, 2 - j]].GetTileState = Tile.TileState.Occupied;
+                    tiles[tilesGrid[i, 2 - j]].GetTileState = TileState.Occupied;
                 }
             }
 
@@ -277,18 +268,18 @@ public class Field : MonoBehaviour, IField
                 List<int> fullTileIndex = new List<int>(3);
 
                 for (int j = 2; j >= 0; --j)
-                    if (tiles[tilesGrid[j, i]].GetTileState == Tile.TileState.Occupied)
+                    if (tiles[tilesGrid[j, i]].GetTileState == TileState.Occupied)
                         fullTileIndex.Add(j);
 
                 for (int j = 0; j < fullTileIndex.Count; ++j)
                 {
                     int scoreBuff = tiles[tilesGrid[fullTileIndex[j], i]].TileScore;
 
-                    tiles[tilesGrid[fullTileIndex[j], i]].GetTileState = Tile.TileState.Free;
+                    tiles[tilesGrid[fullTileIndex[j], i]].GetTileState = TileState.Free;
                     tiles[tilesGrid[fullTileIndex[j], i]].TileScore = 0;
 
                     tiles[tilesGrid[2 - j, i]].TileScore = scoreBuff;
-                    tiles[tilesGrid[2 - j, i]].GetTileState = Tile.TileState.Occupied;
+                    tiles[tilesGrid[2 - j, i]].GetTileState = TileState.Occupied;
                 }
 
                 // Merging
@@ -298,34 +289,34 @@ public class Field : MonoBehaviour, IField
                     if (tiles[tilesGrid[j, i]].TileScore != tiles[tilesGrid[j - 1, i]].TileScore)
                         continue;
 
-                    if (tiles[tilesGrid[j, i]].GetTileState == Tile.TileState.Free)
+                    if (tiles[tilesGrid[j, i]].GetTileState == TileState.Free)
                         continue;
+
+                    ++scoreResult;
 
                     tiles[tilesGrid[j, i]].TileScore *= 2;
                     tiles[tilesGrid[j - 1, i]].TileScore = 0;
-                    tiles[tilesGrid[j - 1, i]].GetTileState = Tile.TileState.Free;
+                    tiles[tilesGrid[j - 1, i]].GetTileState = TileState.Free;
                 }
 
                 // Finalising
                 fullTileIndex = new List<int>(3);
 
                 for (int j = 2; j >= 0; --j)
-                    if (tiles[tilesGrid[j, i]].GetTileState == Tile.TileState.Occupied)
+                    if (tiles[tilesGrid[j, i]].GetTileState == TileState.Occupied)
                         fullTileIndex.Add(j);
 
                 for (int j = 0; j < fullTileIndex.Count; ++j)
                 {
                     int scoreBuff = tiles[tilesGrid[fullTileIndex[j], i]].TileScore;
 
-                    tiles[tilesGrid[fullTileIndex[j], i]].GetTileState = Tile.TileState.Free;
+                    tiles[tilesGrid[fullTileIndex[j], i]].GetTileState = TileState.Free;
                     tiles[tilesGrid[fullTileIndex[j], i]].TileScore = 0;
 
                     tiles[tilesGrid[2 - j, i]].TileScore = scoreBuff;
-                    tiles[tilesGrid[2 - j, i]].GetTileState = Tile.TileState.Occupied;
+                    tiles[tilesGrid[2 - j, i]].GetTileState = TileState.Occupied;
                 }
             }
-
-
-        SpawnTiles();
+        return scoreResult;
     }
 }

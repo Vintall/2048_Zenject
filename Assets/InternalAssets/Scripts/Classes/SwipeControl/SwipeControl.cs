@@ -4,22 +4,10 @@ using System.Collections.Generic;
 using UnityEngine;
 using Zenject;
 
-public enum SwipeDirection
-{
-    Left,
-    Up,
-    Right,
-    Down
-}
 
-public class SwipeControll : ITickable, IInitializable
+public class SwipeControl : ISwipeControl
 {
-    enum SwipeState
-    {
-        None,
-        Touch,
-        Swiping
-    }
+    
     SwipeState swipeState = SwipeState.None;
     readonly SignalBus signalBus;
     
@@ -27,7 +15,7 @@ public class SwipeControll : ITickable, IInitializable
     Vector2 startPosition;
     Vector2 endPosition;
 
-    public SwipeControll(SignalBus signalBus) => this.signalBus = signalBus;
+    public SwipeControl(SignalBus signalBus) => this.signalBus = signalBus;
     public void Initialize() // Aka Awake
     {
        treshold = Screen.width / 10;
@@ -40,7 +28,7 @@ public class SwipeControll : ITickable, IInitializable
             {
                 Vector2 direction = endPosition - startPosition;
 
-                DefineControl(direction);
+                SendControl(DefineControl(direction));
             }
 
             swipeState = SwipeState.None;
@@ -58,30 +46,24 @@ public class SwipeControll : ITickable, IInitializable
             endPosition = Input.touches[0].position;
         }
     }
-    void DefineControl(Vector2 swipeDirection)
+    SwipeDirection DefineControl(Vector2 swipeDirection)
     {
-        SwipeDirection conclusion;
-
         if (swipeDirection.x >= swipeDirection.y)
         {
             if (swipeDirection.x >= -swipeDirection.y)
-                conclusion = SwipeDirection.Right;
+                return SwipeDirection.Right;
             else
-                conclusion = SwipeDirection.Down;
+                return SwipeDirection.Down;
         }
         else
         {
             if (swipeDirection.x >= -swipeDirection.y)
-                conclusion = SwipeDirection.Up;
+                return SwipeDirection.Up;
             else
-                conclusion = SwipeDirection.Left;
+                return SwipeDirection.Left;
         }
-
-        SendControl(conclusion);
     }
-    void SendControl(SwipeDirection swipeDirection)
-    {
+    void SendControl(SwipeDirection swipeDirection) => 
         signalBus.Fire(new PlayerControlSwapSignal { swipeDirection = swipeDirection });
-    }
     
 }
