@@ -15,7 +15,7 @@ public class Field : MonoBehaviour, IField
         {
             int count = 0;
 
-            for (int i = 0; i < 9; ++i)
+            for (int i = 0; i < tiles.Length; ++i)
                     if (tiles[i].GetTileState == TileState.Free)
                         ++count;
 
@@ -25,13 +25,16 @@ public class Field : MonoBehaviour, IField
     static int MaxTilesSpawn = 3;
     static int MinTilesSpawn = 2;
 
+    // Do no change untill procedural generation of field
+    const int axisLength = 3; 
+
     private void Awake()
     {
-        tilesGrid = new int[3, 3];
+        tilesGrid = new int[axisLength, axisLength];
 
-        for (int i = 0; i < 3; ++i)
-            for (int j = 0; j < 3; ++j)
-                tilesGrid[i, j] = j + i * 3;
+        for (int i = 0; i < axisLength; ++i)
+            for (int j = 0; j < axisLength; ++j)
+                tilesGrid[i, j] = j + i * axisLength;
     }
     public void SpawnTiles()
     {
@@ -64,16 +67,16 @@ public class Field : MonoBehaviour, IField
     public bool CheckField()
     {
         bool isProceedPossible = false;
-        for (int i = 0; i < 3; ++i)
-            for (int j = 0; j < 3; ++j)
+        for (int i = 0; i < axisLength; ++i)
+            for (int j = 0; j < axisLength; ++j)
             {
-                if (i < 2)
+                if (i < axisLength - 1)
                     if (tiles[tilesGrid[i, j]].TileScore == tiles[tilesGrid[i + 1, j]].TileScore)
                     {
                         isProceedPossible = true;
                         break;
                     }
-                if (j < 2)
+                if (j < axisLength - 1)
                     if (tiles[tilesGrid[i, j]].TileScore == tiles[tilesGrid[i, j + 1]].TileScore)
                     {
                         isProceedPossible = true;
@@ -90,27 +93,48 @@ public class Field : MonoBehaviour, IField
     public int InputHandle(SwipeDirection swipeDirection)
     { // Definitely require refactoring. But it's enough for some functional state
         int scoreResult = 0;
+        List<int> fullTileIndex;
 
-        if (swipeDirection == SwipeDirection.Left)
-            for (int i = 0; i < 3; ++i)
+        switch(swipeDirection)
+        {
+            case SwipeDirection.Left:
+                LeftSwipe();
+                break;
+            case SwipeDirection.Up:
+                UpSwipe();
+                break;
+            case SwipeDirection.Right:
+                RightSwipe();
+                break;
+            case SwipeDirection.Down:
+                DownSwipe();
+                break;
+        }
+        void LeftSwipe()
+        {
+            for (int i = 0; i < axisLength; ++i)
             {
-                List<int> fullTileIndex = new List<int>(3);
-
-                // Aligning
-                for (int j = 0; j < 3; ++j)
-                    if (tiles[tilesGrid[i, j]].GetTileState == TileState.Occupied)
-                        fullTileIndex.Add(j);
-
-                for (int j = 0; j < fullTileIndex.Count; ++j)
+                void Aligning()
                 {
-                    int scoreBuff = tiles[tilesGrid[i, fullTileIndex[j]]].TileScore;
+                    for (int j = 0; j < axisLength; ++j)
+                        if (tiles[tilesGrid[i, j]].GetTileState == TileState.Occupied)
+                            fullTileIndex.Add(j);
 
-                    tiles[tilesGrid[i, fullTileIndex[j]]].GetTileState = TileState.Free;
-                    tiles[tilesGrid[i, fullTileIndex[j]]].TileScore = 0;
+                    for (int j = 0; j < fullTileIndex.Count; ++j)
+                    {
+                        int scoreBuff = tiles[tilesGrid[i, fullTileIndex[j]]].TileScore;
 
-                    tiles[tilesGrid[i, j]].TileScore = scoreBuff;
-                    tiles[tilesGrid[i, j]].GetTileState = TileState.Occupied;
+                        tiles[tilesGrid[i, fullTileIndex[j]]].GetTileState = TileState.Free;
+                        tiles[tilesGrid[i, fullTileIndex[j]]].TileScore = 0;
+
+                        tiles[tilesGrid[i, j]].TileScore = scoreBuff;
+                        tiles[tilesGrid[i, j]].GetTileState = TileState.Occupied;
+                    }
                 }
+                fullTileIndex = new List<int>(axisLength);
+                Aligning();
+
+
 
                 // Merging
                 for (int j = 0; j < fullTileIndex.Count - 1; ++j)
@@ -128,44 +152,35 @@ public class Field : MonoBehaviour, IField
                     tiles[tilesGrid[i, j + 1]].GetTileState = TileState.Free;
                 }
 
-                // Finalising
-                fullTileIndex = new List<int>(3);
-
-                for (int j = 0; j < 3; ++j)
-                    if (tiles[tilesGrid[i, j]].GetTileState == TileState.Occupied)
-                        fullTileIndex.Add(j);
-
-                for (int j = 0; j < fullTileIndex.Count; ++j)
-                {
-                    int scoreBuff = tiles[tilesGrid[i, fullTileIndex[j]]].TileScore;
-
-                    tiles[tilesGrid[i, fullTileIndex[j]]].GetTileState = TileState.Free;
-                    tiles[tilesGrid[i, fullTileIndex[j]]].TileScore = 0;
-
-                    tiles[tilesGrid[i, j]].TileScore = scoreBuff;
-                    tiles[tilesGrid[i, j]].GetTileState = TileState.Occupied;
-                }
+                fullTileIndex = new List<int>(axisLength);
+                Aligning();
             }
-
-        if (swipeDirection == SwipeDirection.Up)
-            for (int i = 0; i < 3; ++i) // Columns
+        }
+        void UpSwipe()
+        {
+            for (int i = 0; i < axisLength; ++i) // Columns
             {
-                List<int> fullTileIndex = new List<int>(3);
-
-                for (int j = 0; j < 3; ++j) // Rows
-                    if (tiles[tilesGrid[j, i]].GetTileState == TileState.Occupied)
-                        fullTileIndex.Add(j);
-
-                for (int j = 0; j < fullTileIndex.Count; ++j)
+                void Aligning()
                 {
-                    int scoreBuff = tiles[tilesGrid[fullTileIndex[j], i]].TileScore;
+                    for (int j = 0; j < axisLength; ++j) // Rows
+                        if (tiles[tilesGrid[j, i]].GetTileState == TileState.Occupied)
+                            fullTileIndex.Add(j);
 
-                    tiles[tilesGrid[fullTileIndex[j], i]].GetTileState = TileState.Free;
-                    tiles[tilesGrid[fullTileIndex[j], i]].TileScore = 0;
+                    for (int j = 0; j < fullTileIndex.Count; ++j)
+                    {
+                        int scoreBuff = tiles[tilesGrid[fullTileIndex[j], i]].TileScore;
 
-                    tiles[tilesGrid[j, i]].TileScore = scoreBuff;
-                    tiles[tilesGrid[j, i]].GetTileState = TileState.Occupied;
+                        tiles[tilesGrid[fullTileIndex[j], i]].GetTileState = TileState.Free;
+                        tiles[tilesGrid[fullTileIndex[j], i]].TileScore = 0;
+
+                        tiles[tilesGrid[j, i]].TileScore = scoreBuff;
+                        tiles[tilesGrid[j, i]].GetTileState = TileState.Occupied;
+                    }
                 }
+
+                fullTileIndex = new List<int>(axisLength);
+                Aligning();
+
 
                 // Merging stage
 
@@ -185,49 +200,39 @@ public class Field : MonoBehaviour, IField
                 }
 
 
-                // Finalising
-
-                fullTileIndex = new List<int>(3);
-
-                for (int j = 0; j < 3; ++j) // Rows
-                    if (tiles[tilesGrid[j, i]].GetTileState == TileState.Occupied)
-                        fullTileIndex.Add(j);
-
-                for (int j = 0; j < fullTileIndex.Count; ++j)
-                {
-                    int scoreBuff = tiles[tilesGrid[fullTileIndex[j], i]].TileScore;
-
-                    tiles[tilesGrid[fullTileIndex[j], i]].GetTileState = TileState.Free;
-                    tiles[tilesGrid[fullTileIndex[j], i]].TileScore = 0;
-
-                    tiles[tilesGrid[j, i]].TileScore = scoreBuff;
-                    tiles[tilesGrid[j, i]].GetTileState = TileState.Occupied;
-                }
+                fullTileIndex = new List<int>(axisLength);
+                Aligning();
             }
-
-        if (swipeDirection == SwipeDirection.Right)
-            for (int i = 0; i < 3; ++i)
+        }
+        void RightSwipe()
+        {
+            for (int i = 0; i < axisLength; ++i)
             {
-                List<int> fullTileIndex = new List<int>(3);
-
-                for (int j = 2; j >= 0; --j)
-                    if (tiles[tilesGrid[i, j]].GetTileState == TileState.Occupied)
-                        fullTileIndex.Add(j);
-
-                for (int j = 0; j < fullTileIndex.Count; ++j)
+                void Aligning()
                 {
-                    int scoreBuff = tiles[tilesGrid[i, fullTileIndex[j]]].TileScore;
+                    for (int j = axisLength - 1; j >= 0; --j)
+                        if (tiles[tilesGrid[i, j]].GetTileState == TileState.Occupied)
+                            fullTileIndex.Add(j);
 
-                    tiles[tilesGrid[i, fullTileIndex[j]]].GetTileState = TileState.Free;
-                    tiles[tilesGrid[i, fullTileIndex[j]]].TileScore = 0;
+                    for (int j = 0; j < fullTileIndex.Count; ++j)
+                    {
+                        int scoreBuff = tiles[tilesGrid[i, fullTileIndex[j]]].TileScore;
 
-                    tiles[tilesGrid[i, 2 - j]].TileScore = scoreBuff;
-                    tiles[tilesGrid[i, 2 - j]].GetTileState = TileState.Occupied;
+                        tiles[tilesGrid[i, fullTileIndex[j]]].GetTileState = TileState.Free;
+                        tiles[tilesGrid[i, fullTileIndex[j]]].TileScore = 0;
+
+                        tiles[tilesGrid[i, axisLength - 1 - j]].TileScore = scoreBuff;
+                        tiles[tilesGrid[i, axisLength - 1 - j]].GetTileState = TileState.Occupied;
+                    }
                 }
+
+                fullTileIndex = new List<int>(axisLength);
+                Aligning();
+
 
                 // Merging
 
-                for (int j = 2; j > 3 - fullTileIndex.Count; --j)
+                for (int j = axisLength - 1; j > axisLength - fullTileIndex.Count; --j)
                 {
                     if (tiles[tilesGrid[i, j]].TileScore != tiles[tilesGrid[i, j - 1]].TileScore)
                         continue;
@@ -242,49 +247,39 @@ public class Field : MonoBehaviour, IField
                     tiles[tilesGrid[i, j - 1]].GetTileState = TileState.Free;
                 }
 
-                // Finalising
-
-                fullTileIndex = new List<int>(3);
-
-                for (int j = 2; j >= 0; --j)
-                    if (tiles[tilesGrid[i, j]].GetTileState == TileState.Occupied)
-                        fullTileIndex.Add(j);
-
-                for (int j = 0; j < fullTileIndex.Count; ++j)
-                {
-                    int scoreBuff = tiles[tilesGrid[i, fullTileIndex[j]]].TileScore;
-
-                    tiles[tilesGrid[i, fullTileIndex[j]]].GetTileState = TileState.Free;
-                    tiles[tilesGrid[i, fullTileIndex[j]]].TileScore = 0;
-
-                    tiles[tilesGrid[i, 2 - j]].TileScore = scoreBuff;
-                    tiles[tilesGrid[i, 2 - j]].GetTileState = TileState.Occupied;
-                }
+                fullTileIndex = new List<int>(axisLength);
+                Aligning();
             }
-
-        if (swipeDirection == SwipeDirection.Down)
-            for (int i = 0; i < 3; ++i)
+        }
+        void DownSwipe()
+        {
+            for (int i = 0; i < axisLength; ++i)
             {
-                List<int> fullTileIndex = new List<int>(3);
-
-                for (int j = 2; j >= 0; --j)
-                    if (tiles[tilesGrid[j, i]].GetTileState == TileState.Occupied)
-                        fullTileIndex.Add(j);
-
-                for (int j = 0; j < fullTileIndex.Count; ++j)
+                void Aligning()
                 {
-                    int scoreBuff = tiles[tilesGrid[fullTileIndex[j], i]].TileScore;
+                    for (int j = axisLength - 1; j >= 0; --j)
+                        if (tiles[tilesGrid[j, i]].GetTileState == TileState.Occupied)
+                            fullTileIndex.Add(j);
 
-                    tiles[tilesGrid[fullTileIndex[j], i]].GetTileState = TileState.Free;
-                    tiles[tilesGrid[fullTileIndex[j], i]].TileScore = 0;
+                    for (int j = 0; j < fullTileIndex.Count; ++j)
+                    {
+                        int scoreBuff = tiles[tilesGrid[fullTileIndex[j], i]].TileScore;
 
-                    tiles[tilesGrid[2 - j, i]].TileScore = scoreBuff;
-                    tiles[tilesGrid[2 - j, i]].GetTileState = TileState.Occupied;
+                        tiles[tilesGrid[fullTileIndex[j], i]].GetTileState = TileState.Free;
+                        tiles[tilesGrid[fullTileIndex[j], i]].TileScore = 0;
+
+                        tiles[tilesGrid[2 - j, i]].TileScore = scoreBuff;
+                        tiles[tilesGrid[2 - j, i]].GetTileState = TileState.Occupied;
+                    }
                 }
+
+                fullTileIndex = new List<int>(axisLength);
+                Aligning();
+
 
                 // Merging
 
-                for (int j = 2; j > 3 - fullTileIndex.Count; --j)
+                for (int j = axisLength - 1; j > axisLength - fullTileIndex.Count; --j)
                 {
                     if (tiles[tilesGrid[j, i]].TileScore != tiles[tilesGrid[j - 1, i]].TileScore)
                         continue;
@@ -299,24 +294,11 @@ public class Field : MonoBehaviour, IField
                     tiles[tilesGrid[j - 1, i]].GetTileState = TileState.Free;
                 }
 
-                // Finalising
-                fullTileIndex = new List<int>(3);
-
-                for (int j = 2; j >= 0; --j)
-                    if (tiles[tilesGrid[j, i]].GetTileState == TileState.Occupied)
-                        fullTileIndex.Add(j);
-
-                for (int j = 0; j < fullTileIndex.Count; ++j)
-                {
-                    int scoreBuff = tiles[tilesGrid[fullTileIndex[j], i]].TileScore;
-
-                    tiles[tilesGrid[fullTileIndex[j], i]].GetTileState = TileState.Free;
-                    tiles[tilesGrid[fullTileIndex[j], i]].TileScore = 0;
-
-                    tiles[tilesGrid[2 - j, i]].TileScore = scoreBuff;
-                    tiles[tilesGrid[2 - j, i]].GetTileState = TileState.Occupied;
-                }
+                fullTileIndex = new List<int>(axisLength);
+                Aligning();
             }
+        }
+
         return scoreResult;
     }
 }

@@ -20,6 +20,10 @@ public class Tile : MonoBehaviour
         {
             tileScore = value;
             textMesh.text = tileScore.ToString();
+
+            if (tileScore == 0)
+                textMesh.text = "";
+
             Material.color = colorsManager.GetColor(tileScore);
         }
     }
