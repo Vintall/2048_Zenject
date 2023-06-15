@@ -22,7 +22,6 @@ public class TileColorsManager : ITileColorsManager
 
             colorDictionary.Add(score, newColor);
         }
-
         return colorDictionary[score];
     }
 }
