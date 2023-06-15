@@ -1,6 +1,18 @@
 public interface IField
 {
-    public void SpawnTiles();
-    public bool CheckField();
-    public int InputHandle(SwipeDirection swipeDirection);
+    public ITile[,] Tiles
+    {
+        get;
+        set;
+    }
+    public int AxisLength
+    {
+        get;
+        set;
+    }
+    public int FreeTilesCount
+    {
+        get;
+    }
+    
 }

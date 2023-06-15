@@ -14,20 +14,30 @@ public class GameController : IGameController
     }
     GameState gameState = GameState.BeforeStart;
 
-    [Inject(Id = "Field")] 
-    IField field;
-
     [Inject(Id = "UIController")]
     IUIWindowsController uiController;
 
+    [Inject(Id = "FieldSpawner")]
+    IFieldSpawner fieldSpawner;
+
+    [Inject] 
+    IField field;
+
+    [Inject]
+    IFieldController fieldController;
+
     int score = 0;
+
+    const int fieldSize = 3;
 
     void StartGame()
     {
         gameState = GameState.Running;
         uiController.OpenUIWindow(UIController.UIWindowName.MainGameWindow);
 
-        field.SpawnTiles();
+        fieldSpawner.SpawnField(field, fieldSize);
+
+        fieldController.SpawnTiles(field);
     }
 
     void IButtonsCallbackReceiver.OnRestartButtonClick()
@@ -44,13 +54,13 @@ public class GameController : IGameController
         if (gameState != GameState.Running)
             return;
 
-        int scoreAddition = field.InputHandle(swipeDirection.swipeDirection);
+        int scoreAddition = fieldController.InputHandle(field, swipeDirection.swipeDirection);
         score += scoreAddition;
 
         uiController.ChangeScore(score);
         
 
-        bool result = field.CheckField();
+        bool result = fieldController.CheckField(field);
 
         if(!result)
         {
@@ -62,7 +72,7 @@ public class GameController : IGameController
             return;
         }
 
-        field.SpawnTiles();
+        fieldController.SpawnTiles(field);
     }
 
 }
