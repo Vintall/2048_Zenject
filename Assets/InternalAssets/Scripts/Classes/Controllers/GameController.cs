@@ -28,14 +28,12 @@ public class GameController : IGameController
 
     int score = 0;
 
-    const int fieldSize = 3;
-
     void StartGame()
     {
         gameState = GameState.Running;
         uiController.OpenUIWindow(UIController.UIWindowName.MainGameWindow);
 
-        fieldSpawner.SpawnField(field, fieldSize);
+        fieldSpawner.SpawnField(field, uiController.FieldSize);
 
         fieldController.SpawnTiles(field);
     }
@@ -54,6 +52,13 @@ public class GameController : IGameController
         if (gameState != GameState.Running)
             return;
 
+        int[,] scoreBuffer = new int[field.AxisLength, field.AxisLength];
+
+        for (int i = 0; i < field.AxisLength; ++i)
+            for (int j = 0; j < field.AxisLength; ++j)
+                scoreBuffer[i, j] = field.Tiles[i, j].TileScore;
+
+
         int scoreAddition = fieldController.InputHandle(field, swipeDirection.swipeDirection);
         score += scoreAddition;
 
@@ -71,8 +76,18 @@ public class GameController : IGameController
 
             return;
         }
+        bool isSpawnAllowed = false;
 
-        fieldController.SpawnTiles(field);
+        for (int i = 0; i < field.AxisLength; ++i)
+            for (int j = 0; j < field.AxisLength; ++j)
+                if (field.Tiles[i, j].TileScore != scoreBuffer[i, j])
+                {
+                    isSpawnAllowed = true;
+                    break;
+                }
+
+        if (isSpawnAllowed)
+            fieldController.SpawnTiles(field);
     }
 
 }

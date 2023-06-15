@@ -10,6 +10,10 @@ public interface IUIWindowsController
 {
     void OpenUIWindow(UIWindowName name);
     void ChangeScore(int score);
+    public int FieldSize 
+    { 
+        get; 
+    }
 }
 public class UIController : MonoBehaviour, IUIWindowsController
 {
@@ -21,6 +25,8 @@ public class UIController : MonoBehaviour, IUIWindowsController
 
     Label scoreLabel;
     Label gameOverScoreLabel;
+    Label fieldSizeLabel;
+    SliderInt fieldSizeSlider;
 
     public enum UIWindowName
     {
@@ -28,7 +34,10 @@ public class UIController : MonoBehaviour, IUIWindowsController
         GameOverWindow,
         MainGameWindow
     }
-
+    public int FieldSize
+    {
+        get => fieldSizeSlider.value;
+    }
     //IGameController gameController;
     void AddNewWindowToDictionary(UIWindowName name)
     {
@@ -53,6 +62,11 @@ public class UIController : MonoBehaviour, IUIWindowsController
     {
         root.Q<Button>("StartButton").clicked += OnStartButtonClick;
         root.Q<Button>("RestartButton").clicked += OnRestartButtonClick;
+        fieldSizeSlider = root.Q<SliderInt>("FieldSizeSlider");
+
+        fieldSizeSlider.RegisterValueChangedCallback(OnSliderValueChanged);
+
+        fieldSizeLabel = root.Q<Label>("FieldSizeLabel");
         scoreLabel = root.Q<Label>("ScoreLabel");
         gameOverScoreLabel = root.Q<Label>("GameOverScoreLabel");
 
@@ -90,6 +104,10 @@ public class UIController : MonoBehaviour, IUIWindowsController
         RegisterElements();
 
         OpenUIWindow(UIWindowName.GreetingsWindow);
+    }
+    void OnSliderValueChanged(ChangeEvent<int> changeEvent)
+    {
+        fieldSizeLabel.text = $"Field size: {changeEvent.newValue}";
     }
     void OnRestartButtonClick()
     {
