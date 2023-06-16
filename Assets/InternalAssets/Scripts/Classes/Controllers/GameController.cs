@@ -6,12 +6,6 @@ using Zenject;
 
 public class GameController : IGameController
 {
-    enum GameState
-    {
-        BeforeStart,
-        Running,
-        GameOver
-    }
     GameState gameState = GameState.BeforeStart;
 
     [Inject(Id = "UIController")]
@@ -31,7 +25,7 @@ public class GameController : IGameController
     void StartGame()
     {
         gameState = GameState.Running;
-        uiController.OpenUIWindow(UIController.UIWindowName.MainGameWindow);
+        uiController.OpenUIWindow(UIWindowName.MainGameWindow);
 
         fieldSpawner.SpawnField(field, uiController.FieldSize);
 
@@ -40,7 +34,6 @@ public class GameController : IGameController
 
     void IButtonsCallbackReceiver.OnRestartButtonClick()
     {
-        Debug.Log("OnRestartButtonClick");
         SceneManager.LoadScene(0, LoadSceneMode.Single);
     }
     void IButtonsCallbackReceiver.OnStartButtonClick()
@@ -69,8 +62,7 @@ public class GameController : IGameController
 
         if(!result)
         {
-            Debug.Log("GameOverEvent");
-            uiController.OpenUIWindow(UIController.UIWindowName.GameOverWindow);
+            uiController.OpenUIWindow(UIWindowName.GameOverWindow);
 
             gameState = GameState.GameOver;
 
